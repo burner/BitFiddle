@@ -31,3 +31,8 @@
 # Debug files
 *.dSYM/
 *.su
+.dub
+docs.json
+__dummy.html
+*.o
+*.obj
