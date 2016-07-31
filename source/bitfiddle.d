@@ -91,8 +91,8 @@ unittest {
 }
 
 T setBit(T)(T bitfield, const ulong idx, bool value) if(isIntegral!T) {
-	return cast(T)(cast(ulong)(bitfield) 
-		^ (-cast(ulong)(value) ^ cast(ulong)(bitfield)) 
+	return cast(T)(cast(ulong)(bitfield)
+		^ (-cast(ulong)(value) ^ cast(ulong)(bitfield))
 		& (1UL << idx));
 }
 
