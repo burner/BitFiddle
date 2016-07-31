@@ -5,8 +5,35 @@ private template upTo(T) {
 	enum upTo = T.sizeof * 8UL;
 }
 
+private template minUnsignedIntegral(T) {
+	static if(is(T == byte)) {
+		alias minUnsignedIntegral = ubyte;
+	} else static if(is(T == short)) {
+		alias minUnsignedIntegral = ushort;
+	} else static if(is(T == int)) {
+		alias minUnsignedIntegral = uint;
+	} else static if(is(T == long)) {
+		alias minUnsignedIntegral = ulong;
+	} else {
+		alias minUnsignedIntegral = T;
+	}
+}
+
 bool testBit(T)(T bitfield, const ulong idx) if(isIntegral!T) {
 	return (cast(ulong)(bitfield) & (1UL << idx)) > 0UL;
+}
+
+bool testAnyBit(T)(T bitfield) if(isIntegral!T) {
+	return bitfield != T.init;
+}
+
+bool testNoBit(T)(T bitfield) if(isIntegral!T) {
+	return bitfield == T.init;
+}
+
+bool testAllBit(T)(T bitfield) if(isIntegral!T) {
+	import std.traits : isUnsigned;
+	return cast(minUnsignedIntegral!T)(bitfield) == minUnsignedIntegral!T.max;
 }
 
 unittest {
@@ -47,9 +74,11 @@ unittest {
 
 	foreach(T; AliasSeq!(ubyte,ushort,uint,ulong,byte,short,int,long)) {
 		T v;
+		assert(!testAnyBit(v));
 		for(size_t i = 0; i < upTo!T; ++i) {
 			assert(!testBit(v, i));
 			v = setBit(v, i);
+			assert(testAnyBit(v));
 			for(size_t j = 0; j <= i; ++j) {
 				assert(testBit(v, j));
 			}
@@ -71,9 +100,13 @@ unittest {
 
 	foreach(T; AliasSeq!(ubyte,ushort,uint,ulong,byte,short,int,long)) {
 		T v;
+		assert(!testAnyBit(v));
 		for(size_t i = 0; i < upTo!T; ++i) {
 			assert(!testBit(v, i));
+			assert(!testAllBit(v));
 			v = setBit(v, i, true);
+			assert(!testNoBit(v));
+			assert(testAnyBit(v));
 			for(size_t j = 0; j <= i; ++j) {
 				assert(testBit(v, j));
 			}
@@ -81,10 +114,14 @@ unittest {
 				assert(!testBit(v, j));
 			}
 		}
+		assert(testAllBit(v));
 
 		for(size_t i = 0; i < upTo!T; ++i) {
+			assert(!testNoBit(v));
 			assert(testBit(v, i));
+			assert(testAnyBit(v));
 			v = setBit(v, i, false);
+			assert(!testAllBit(v));
 			for(size_t j = 0; j <= i; ++j) {
 				assert(!testBit(v, j));
 			}
@@ -92,5 +129,8 @@ unittest {
 				assert(testBit(v, j));
 			}
 		}
+		assert(!testAnyBit(v));
+		assert(testNoBit(v));
+		assert(!testAllBit(v));
 	}
 }
