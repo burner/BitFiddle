@@ -1,0 +1,9 @@
+{
+	"name": "bitfiddle",
+	"authors": [
+		"burner"
+	],
+	"description": "A library that makes fiddling with bits easy as calling a function.",
+	"copyright": "Copyright © 2016, burner",
+	"license": "boost"
+}
