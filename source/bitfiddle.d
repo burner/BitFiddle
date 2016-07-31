@@ -1,6 +1,7 @@
 import std.traits : isIntegral;
 import std.stdio;
 
+pure @safe @nogc nothrow:
 private template upTo(T) {
 	enum upTo = T.sizeof * 8UL;
 }
@@ -122,6 +123,7 @@ unittest {
 			assert(testAnyBit(v));
 			v = setBit(v, i, false);
 			assert(!testAllBit(v));
+			assert(!testAllBit(v));
 			for(size_t j = 0; j <= i; ++j) {
 				assert(!testBit(v, j));
 			}
@@ -132,5 +134,59 @@ unittest {
 		assert(!testAnyBit(v));
 		assert(testNoBit(v));
 		assert(!testAllBit(v));
+	}
+}
+
+T flipBit(T)(T bitfield, const ulong idx) if(isIntegral!T) {
+	return cast(T)(cast(ulong)(bitfield) ^ (1UL << idx));
+}
+
+unittest {
+	import std.meta : AliasSeq;
+
+	foreach(T; AliasSeq!(ubyte,ushort,uint,ulong,byte,short,int,long)) {
+		T v;
+		assert(!testAnyBit(v));
+		assert(testNoBit(v));
+		for(size_t i = 0; i < upTo!T; ++i) {
+			v = flipBit(v, i);
+			assert(testBit(v, i));
+			for(size_t j = 0; j < i; ++j) {
+				assert(!testBit(v, j));
+			}
+			for(size_t j = i+1; j < upTo!T; ++j) {
+				assert(!testBit(v, j));
+			}
+			v = flipBit(v, i);
+			assert(!testBit(v, i));
+		}
+	}
+}
+
+T resetBit(T)(T bitfield, const ulong idx) if(isIntegral!T) {
+	return cast(T)(cast(ulong)(bitfield) & ~(1UL << idx));
+}
+
+unittest {
+	import std.meta : AliasSeq;
+
+	foreach(T; AliasSeq!(ubyte,ushort,uint,ulong,byte,short,int,long)) {
+		T v;
+		assert(!testAnyBit(v));
+		assert(testNoBit(v));
+		for(size_t i = 0; i < upTo!T; ++i) {
+			v = setBit(v, i);
+			assert(testBit(v, i));
+			for(size_t j = 0; j < i; ++j) {
+				assert(!testBit(v, j));
+			}
+			for(size_t j = i+1; j < upTo!T; ++j) {
+				assert(!testBit(v, j));
+			}
+			v = resetBit(v, i);
+			assert(!testBit(v, i));
+			assert(testNoBit(v));
+			assert(!testAnyBit(v));
+		}
 	}
 }
