@@ -30,7 +30,7 @@ Params:
 
 Returns: `true` if the bit is set, `false` otherwise.
 */
-bool testBit(T)(T bitfield, const ulong idx) if(isIntegral!T) {
+bool testBit(T)(const T bitfield, const ulong idx) if(isIntegral!T) {
 	return (cast(ulong)(bitfield) & (1UL << idx)) > 0UL;
 }
 
@@ -50,7 +50,7 @@ Params:
 
 Returns: `true` if any bit is set, `false otherwise.
 */
-bool testAnyBit(T)(T bitfield) if(isIntegral!T) {
+bool testAnyBit(T)(const T bitfield) if(isIntegral!T) {
 	return bitfield != T.init;
 }
 
@@ -69,7 +69,7 @@ Params:
 
 Returns: `true` if no bits are set, `false otherwise.
 */
-bool testNoBit(T)(T bitfield) if(isIntegral!T) {
+bool testNoBit(T)(const T bitfield) if(isIntegral!T) {
 	return bitfield == T.init;
 }
 
@@ -88,8 +88,7 @@ Params:
 
 Returns: `true` if all bits are set, `false otherwise.
 */
-bool testAllBit(T)(T bitfield) if(isIntegral!T) {
-	import std.traits : isUnsigned;
+bool testAllBit(T)(const T bitfield) if(isIntegral!T) {
 	return cast(minUnsignedIntegral!T)(bitfield) == minUnsignedIntegral!T.max;
 }
 
@@ -136,7 +135,7 @@ Params:
 
 Returns: a copy of `bitfield` with bit `idx` set
 */
-T setBit(T)(T bitfield, const ulong idx) if(isIntegral!T) {
+T setBit(T)(const T bitfield, const ulong idx) if(isIntegral!T) {
 	ulong value = cast(ulong)bitfield;
 	ulong mask = 1UL << idx;
 	value |= mask;
@@ -183,7 +182,7 @@ Params:
 
 Returns: a copy of `bitfield` with bit `idx` set to `value`
 */
-T setBit(T)(T bitfield, const ulong idx, bool value) if(isIntegral!T) {
+T setBit(T)(const T bitfield, const ulong idx, bool value) if(isIntegral!T) {
 	return cast(T)(cast(ulong)(bitfield)
 		^ (-cast(ulong)(value) ^ cast(ulong)(bitfield))
 		& (1UL << idx));
@@ -250,7 +249,7 @@ Params:
 
 Returns: a copy of `bitfield` with bit `idx` flipped
 */
-T flipBit(T)(T bitfield, const ulong idx) if(isIntegral!T) {
+T flipBit(T)(const T bitfield, const ulong idx) if(isIntegral!T) {
 	return cast(T)(cast(ulong)(bitfield) ^ (1UL << idx));
 }
 
@@ -296,7 +295,7 @@ Params:
 
 Returns: a copy of `bitfield` with bit `idx` reset
 */
-T resetBit(T)(T bitfield, const ulong idx) if(isIntegral!T) {
+T resetBit(T)(const T bitfield, const ulong idx) if(isIntegral!T) {
 	return cast(T)(cast(ulong)(bitfield) & ~(1UL << idx));
 }
 
