@@ -34,6 +34,15 @@ bool testBit(T)(T bitfield, const ulong idx) if(isIntegral!T) {
 	return (cast(ulong)(bitfield) & (1UL << idx)) > 0UL;
 }
 
+///
+unittest {
+	int a = 0b0000_0000_0010_0001;
+	assert(testBit(a, 0));
+	assert(!testBit(a, 1));
+	assert(testBit(a, 5));
+	assert(!testBit(a, 6));
+}
+
 /** Tests if any bit is set in the integer `bitfield`.
 
 Params:
@@ -43,6 +52,14 @@ Returns: `true` if any bit is set, `false otherwise.
 */
 bool testAnyBit(T)(T bitfield) if(isIntegral!T) {
 	return bitfield != T.init;
+}
+
+///
+unittest {
+	int a = 0b0000_0000_0010_0001;
+	int b = 0b0000_0000_0000_0000;
+	assert(testAnyBit(a));
+	assert(!testAnyBit(b));
 }
 
 /** Tests if no bit is set in the integer `bitfield`.
@@ -56,6 +73,14 @@ bool testNoBit(T)(T bitfield) if(isIntegral!T) {
 	return bitfield == T.init;
 }
 
+///
+unittest {
+	int a = 0b0000_0000_0010_0001;
+	int b = 0b0000_0000_0000_0000;
+	assert(testAnyBit(a));
+	assert(!testAnyBit(b));
+}
+
 /** Tests if all bits are set in the integer `bitfield`.
 
 Params:
@@ -66,6 +91,14 @@ Returns: `true` if all bits are set, `false otherwise.
 bool testAllBit(T)(T bitfield) if(isIntegral!T) {
 	import std.traits : isUnsigned;
 	return cast(minUnsignedIntegral!T)(bitfield) == minUnsignedIntegral!T.max;
+}
+
+///
+unittest {
+	int a = 0b1111_1111_0010_1111;
+	int b = 0b1111_1111_1111_1111;
+	assert(!testAllBit(a));
+	assert(testAnyBit(b));
 }
 
 unittest {
@@ -94,8 +127,8 @@ unittest {
 	}
 }
 
-/** Creates a copy of the integer `bitfield` and sets the bit `idx` in this
-copy.  If `idx >= T.sizeof * 8` the bahaviour is undefined.
+/** Creates a copy of the integer `bitfield` and sets the bit `idx` in the
+returned copy.  If `idx >= T.sizeof * 8` the bahaviour is undefined.
 
 Params:
 	bitfield = the integer to modify
@@ -108,6 +141,14 @@ T setBit(T)(T bitfield, const ulong idx) if(isIntegral!T) {
 	ulong mask = 1UL << idx;
 	value |= mask;
 	return cast(T)value;
+}
+
+///
+unittest {
+	int a = 0b0000_0000_0000_0000;
+	int b = 0b0000_0000_0000_1000;
+	a = setBit(a, 3);
+	assert(a == b);
 }
 
 unittest {
@@ -130,13 +171,15 @@ unittest {
 	}
 }
 
-/** Creates a copy of the integer `bitfield` and sets the bit `idx` in this
-copy to the passed `value`.  If `idx >= T.sizeof * 8` the bahaviour is undefined.
+/** Creates a copy of the integer `bitfield` and sets the bit `idx` in the
+returned copy to the passed `value`.  If `idx >= T.sizeof * 8` the bahaviour
+is undefined.
 
 Params:
 	bitfield = the integer to modify
 	idx = the index of the bit to set
-	value = the value the `bit` `idx` should be set to
+	value = the value the `bit` `idx` should be set to. 
+		`true == 1`, `false == 0`
 
 Returns: a copy of `bitfield` with bit `idx` set to `value`
 */
@@ -144,6 +187,17 @@ T setBit(T)(T bitfield, const ulong idx, bool value) if(isIntegral!T) {
 	return cast(T)(cast(ulong)(bitfield)
 		^ (-cast(ulong)(value) ^ cast(ulong)(bitfield))
 		& (1UL << idx));
+}
+
+///
+unittest {
+	int a = 0b0000_0000_0000_0000;
+	int b = 0b0000_0000_0000_1000;
+	int c = setBit(a, 3, true);
+	assert(c == b);
+
+	c = setBit(a, 3, false);
+	assert(c == a);
 }
 
 unittest {
@@ -187,8 +241,8 @@ unittest {
 	}
 }
 
-/** Creates a copy of the integer `bitfield` and flips the bit `idx` in this
-copy.  If `idx >= T.sizeof * 8` the bahaviour is undefined.
+/** Creates a copy of the integer `bitfield` and flips the bit `idx` in the
+returned copy.  If `idx >= T.sizeof * 8` the bahaviour is undefined.
 
 Params:
 	bitfield = the integer to modify
@@ -198,6 +252,17 @@ Returns: a copy of `bitfield` with bit `idx` flipped
 */
 T flipBit(T)(T bitfield, const ulong idx) if(isIntegral!T) {
 	return cast(T)(cast(ulong)(bitfield) ^ (1UL << idx));
+}
+
+///
+unittest {
+	int a = 0b0000_0000_0000_0000;
+	int b = 0b0000_0000_0000_1000;
+	int c = flipBit(a, 3);
+	assert(c == b);
+
+	c = flipBit(c, 3);
+	assert(c == a);
 }
 
 unittest {
@@ -222,8 +287,8 @@ unittest {
 	}
 }
 
-/** Creates a copy of the integer `bitfield` and set the bit `idx` in this
-copy to `0`.  If `idx >= T.sizeof * 8` the bahaviour is undefined.
+/** Creates a copy of the integer `bitfield` and set the bit `idx` in the
+returned copy to `0`.  If `idx >= T.sizeof * 8` the bahaviour is undefined.
 
 Params:
 	bitfield = the integer to modify
@@ -233,6 +298,14 @@ Returns: a copy of `bitfield` with bit `idx` reset
 */
 T resetBit(T)(T bitfield, const ulong idx) if(isIntegral!T) {
 	return cast(T)(cast(ulong)(bitfield) & ~(1UL << idx));
+}
+
+///
+unittest {
+	int a = 0b0000_0000_0000_1000;
+	int b = 0b0000_0000_0000_0000;
+	int c = resetBit(a, 3);
+	assert(c == b);
 }
 
 unittest {
