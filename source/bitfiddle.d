@@ -1,7 +1,8 @@
 import std.traits : isIntegral;
+import std.range.primitives : isOutputRange;
 import std.stdio;
 
-pure @safe @nogc nothrow:
+pure @safe @nogc nothrow {
 
 private template upTo(T)
 {
@@ -383,4 +384,61 @@ unittest
             assert(!testAnyBit(v));
         }
     }
+}
+
+}
+
+/** Converts a integer bitfield into a four bit at a time representation,
+where every four bits are seperated by an underscore.
+*/
+void bitsPrettyPrint(T,Out)(const T value, ref Out output) 
+	if (isIntegral!T && isOutputRange!(Out,string))
+{
+	import std.format : formattedWrite;	
+	formattedWrite(output, "0b");
+	
+	const ulong mask = 0b0000_0000_0000_0000_0000_0000_0000_1111;
+	const ulong sets  = T.sizeof * 2;
+
+	ulong bitfield = cast(ulong)value;
+
+	for (size_t i = 0; i < sets; ++i) 
+	{
+		if (i > 0)
+		{
+			formattedWrite(output, "_");
+		}
+
+		ulong shift = (sets - i - 1) * 4UL;
+		
+		formattedWrite(output, "%04b", (bitfield >> shift) & mask);
+	}
+}
+
+/// ditto
+string bitsPrettyPrint(T)(const T value) if (isIntegral!T)
+{
+	import std.array : appender;
+
+	auto app = appender!string();
+	app.reserve(2 + T.sizeof * 8 + (T.sizeof / 2));
+
+	bitsPrettyPrint(value, app);
+
+	return app.data;
+}
+
+///
+unittest
+{
+	import std.conv : to;
+	ubyte b = cast(ubyte)0b1000_0001;
+
+	string s = bitsPrettyPrint(b);
+	assert(s == "0b1000_0001");
+
+	ushort shrt = cast(ushort)0b0000_0100_1000_0001;
+
+	s = bitsPrettyPrint(shrt);
+	assert(s == "0b0000_0100_1000_0001");
 }
